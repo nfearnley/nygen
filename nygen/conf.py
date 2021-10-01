@@ -25,13 +25,12 @@ def load_conf() -> tuple[NygenConf, dict[str, any]]:
     except FileNotFoundError:
         data = {}
     conf = NygenConf.load(data)
-    conf_vars = {k: v for k, v in data.items() if k in Formatter.conf_vars}
+    conf_vars = {k: data[k] for k in Formatter.conf_vars if k in data}
     return conf, conf_vars
 
 
 def init_conf(conf_vars: dict[str, str]):
-    formatter = Formatter()
-    formatter.load(conf_vars=conf_vars)
+    formatter = Formatter(conf_vars=conf_vars)
     confpath.parent.mkdir(parents=True, exist_ok=True)
     with confpath.open("w") as f:
         toml.dump(formatter.to_conf(), f)

@@ -1,6 +1,7 @@
 from pathlib import Path
 import importlib.resources
 import json
+import os
 
 import nygen.data
 from nygen.conf import load_conf
@@ -21,7 +22,7 @@ def is_dir_empty(p: Path) -> bool:
 def precheck_name(path_maps) -> None:
     # Duplicate path_map destinations means bad project name, such as "docs" or "tests"
     if len(set(dst for src, dst in path_maps)) != len(path_maps):
-        raise BadProjectNameException("Project name is invalid: {name}")
+        raise BadProjectNameException(f"Project name is invalid: {name}")
 
 
 def precheck_dst(dstpath: Path) -> None:
@@ -41,12 +42,18 @@ def get_path_maps(dst_root: Path, formatter: Formatter) -> list[tuple[Path, Path
     return path_maps
 
 
-def gen_project(name, cmd_vars: dict[str, str]):
+def map_path(src: Path, src_root: Path, dst_root: Path, formatter: Formatter):
+    rel_src = src.relative_to(src_root)
+    rel_src = Path(formatter.format(str(rel_src)))
+    dst = dst_root / rel_src
+    return dst
+
+
+def gen_project(name, cmd_vars: dict[str, str], open_proj: bool, open_dir: bool):
     print(f"Generating project {name}")
     conf, conf_vars = load_conf()
-    formatter = Formatter()
+    formatter = Formatter(cmd_vars=cmd_vars, conf_vars=conf_vars)
     formatter["name"] = name
-    formatter.load(cmd_vars=cmd_vars, conf_vars=conf_vars)
 
     dst_root = Path(name)
 
@@ -68,13 +75,10 @@ def gen_project(name, cmd_vars: dict[str, str]):
         gen_file(src, dst, formatter)
 
     print(f"Successfully created project at {dst_root.absolute()}")
-
-
-def map_path(src: Path, src_root: Path, dst_root: Path, formatter: Formatter):
-    rel_src = src.relative_to(src_root)
-    rel_src = Path(formatter.format(str(rel_src)))
-    dst = dst_root / rel_src
-    return dst
+    if open_proj:
+        os.startfile(dst_root.absolute() / f"{name}.code-workspace")
+    if open_dir:
+        os.startfile(dst_root.absolute())
 
 
 def gen_file(src: Path, dst: Path, formatter: Formatter):

@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 import re
 from pathlib import Path
 import json
@@ -18,7 +19,7 @@ def get_envs() -> list[str]:
     proc = run(["conda", "info", "--envs"], text=True, capture_output=True)
     lines = proc.stdout.splitlines()
     lines = [clean_env_line(line) for line in lines]
-    envs = [line.lower() for line in lines if line]
+    envs = [line.casefold() for line in lines if line]
     return envs
 
 
@@ -28,7 +29,10 @@ def create_conda(name: str, python: str) -> str:
     proc = run(args, text=True, capture_output=True)
     if proc.returncode != 0:
         raise CondaException("Error creating conda environment:\n{proc.stderr}")
-    j: dict = json.loads(proc.stdout)
+    try:
+        j: dict = json.loads(proc.stdout)
+    except JSONDecodeError:
+        raise CondaException("Error creating conda environment:\n{proc.stderr}")
     conda_path = Path(j["prefix"])
     python_path = conda_path / "python.exe"
     return str(python_path)
@@ -36,4 +40,4 @@ def create_conda(name: str, python: str) -> str:
 
 def conda_exists(name):
     """Check whether a particular Conda environment already exists"""
-    return name.lower() in get_envs()
+    return name.casefold() in get_envs()

@@ -16,9 +16,8 @@ class VarDef():
     desc: str
     cmd: bool
     conf: bool
-    gen: bool
     precheck: bool
-    default: Union[str, Callable]
+    default: Union[str, Callable[[], str]]
 
 
 class Formatter(collections.abc.Mapping):
@@ -26,22 +25,22 @@ class Formatter(collections.abc.Mapping):
     _vars = {
         v.name: v for v in
         [
-            #      NAME                 DESC                    CMD     CONF    GEN,    PRECHECK    DEFAULT
-            VarDef("name",              "Package name",         False,  False,  False,  True,       None),                                          # noqa: E241
-            VarDef("author",            "Author full name",     True,   True,   False,  True,       None),                                          # noqa: E241
-            VarDef("email",             "Author email",         True,   True,   False,  True,       None),                                          # noqa: E241
-            VarDef("github",            "Github username",      True,   True,   False,  True,       None),                                          # noqa: E241
-            VarDef("python",            "Python version",       True,   True,   False,  True,       "3.9"),                                         # noqa: E241
-            VarDef("_",                 "Empty string",         False,  False,  False,  False,      ""),                                            # noqa: E241
-            VarDef("year",              "Year",                 False,  False,  False,  True,       lambda: str(date.today().year)),                # noqa: E241, E272
-            VarDef("pytest_version",    "pytest version",       True,   True,   False,  True,       lambda: nypi.get_pkg("pytest").version),        # noqa: E241, E272
-            VarDef("flake8_version",    "flake version",        True,   True,   False,  True,       lambda: nypi.get_pkg("flake8").version),        # noqa: E241, E272
-            VarDef("autopep8_version",  "autopep8 version",     True,   True,   False,  True,       lambda: nypi.get_pkg("autopep8").version),      # noqa: E241, E272
-            VarDef("python_path",       "Path to python.exe",   False,  False,  False,  False,      None),                                          # noqa: E241
+            #      NAME                 DESC                    CMD     CONF    PRECHECK    DEFAULT
+            VarDef("name",              "Package name",         False,  False,  True,       None),                                          # noqa: E241
+            VarDef("author",            "Author full name",     True,   True,   True,       None),                                          # noqa: E241
+            VarDef("email",             "Author email",         True,   True,   True,       None),                                          # noqa: E241
+            VarDef("github",            "Github username",      True,   True,   True,       None),                                          # noqa: E241
+            VarDef("python",            "Python version",       True,   True,   True,       "3.9"),                                         # noqa: E241
+            VarDef("_",                 "Empty string",         False,  False,  False,      ""),                                            # noqa: E241
+            VarDef("year",              "Year",                 False,  False,  True,       lambda: str(date.today().year)),                # noqa: E241, E272
+            VarDef("pytest_version",    "pytest version",       True,   True,   True,       lambda: nypi.get_pkg("pytest").version),        # noqa: E241, E272
+            VarDef("flake8_version",    "flake version",        True,   True,   True,       lambda: nypi.get_pkg("flake8").version),        # noqa: E241, E272
+            VarDef("autopep8_version",  "autopep8 version",     True,   True,   True,       lambda: nypi.get_pkg("autopep8").version),      # noqa: E241, E272
+            VarDef("python_path",       "Path to python.exe",   False,  False,  False,      None),                                          # noqa: E241
         ]
     }
-    cmd_vars = [name for name, _var in _vars.items() if _var.cmd]
-    conf_vars = [name for name, _var in _vars.items() if _var.conf]
+    cmd_vars = {name: _var for name, _var in _vars.items() if _var.cmd}
+    conf_vars = {name: _var for name, _var in _vars.items() if _var.conf}
 
     def __init__(self, cmd_vars: dict[str, str] = None, conf_vars: dict[str, str] = None):
         self._vals: dict[str, str] = {v: None for v in self._vars}
