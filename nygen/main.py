@@ -12,14 +12,14 @@ def parse_args() -> tuple[str, dict[str, str], dict[str, str]]:
 
     create_parser = subparsers.add_parser("create")
     create_parser.add_argument("name", help="Package name")
-    create_parser.add_argument("--open", action="store_true")
-    create_parser.add_argument("--open-dir", action="store_true")
+    create_parser.add_argument("--open", action="store_true", help="Open the project in vscode after creation")
+    create_parser.add_argument("--open-dir", action="store_true", help="Open the project folder after creation")
     for arg_name, _var in Formatter.cmd_vars.items():
         create_parser.add_argument(f"--{arg_name}", help=_var.desc)
 
     init_parser = subparsers.add_parser("init")
     for arg_name, _var in Formatter.conf_vars.items():
-        init_parser.add_argument(f"--{arg_name}, help=_var.desc")
+        init_parser.add_argument(f"--{arg_name}", help="_var.desc")
 
     args = parser.parse_args()
     args_dict: dict[str, str] = vars(args)
