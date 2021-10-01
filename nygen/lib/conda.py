@@ -3,6 +3,8 @@ from pathlib import Path
 import json
 from subprocess import run
 
+from nygen.lib.exceptions import CondaException
+
 
 RE_ENVJUNK = re.compile("[ #].*")
 
