@@ -1,5 +1,6 @@
 from pathlib import Path
 import importlib.resources
+import json
 
 import nygen.data
 from nygen.conf import load_conf
@@ -44,7 +45,7 @@ def gen_project(name, cmd_vars: dict[str, str]):
 
     print(f"Creating conda environment {name!r} with Python {formatter['python']}")
     python_path = create_conda(name, formatter["python"])
-    formatter["python_path"] = repr(python_path)
+    formatter["python_path"] = json.dumps(python_path)
 
     print("Generating file structure")
     for src, dst in map_paths(dst_root, formatter):
