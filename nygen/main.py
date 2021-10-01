@@ -5,6 +5,7 @@ from nygen.lib.formatter import Formatter
 from nygen.lib.gen import gen_project
 from nygen.lib.exceptions import GenException
 
+
 def parse_args() -> tuple[str, dict[str, str], dict[str, str]]:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)

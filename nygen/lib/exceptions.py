@@ -2,7 +2,7 @@ class GenException(Exception):
     pass
 
 
-class BadProjName(GenException):
+class BadProjectNameException(GenException):
     pass
 
 
