@@ -27,6 +27,7 @@ class FormatVars:
 
     def to_json(self):
         return {
+            "_": "",    # Blank substitution used to mangle special names
             "name": self.name,
             "year": self.year,
             "author": self.author,
