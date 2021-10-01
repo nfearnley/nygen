@@ -5,6 +5,6 @@
 		}}
 	],
 	"settings": {{
-		"python.pythonPath": "{python_path}"
+		"python.pythonPath": {python_path}
 	}}
 }}

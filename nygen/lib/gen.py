@@ -27,7 +27,7 @@ def gen_project(name, author: str, email: str, github: str):
         dst_root = Path(name)
         path_maps = [(src, map_dst(src, src_root, dst_root, fvars.to_json())) for src in srcs]
         precheck(name, path_maps, fvars)
-        fvars.python_path = create_conda(name)
+        fvars.python_path = repr(create_conda(name))
         for src, dst in path_maps:
             gen(src, dst, fvars.to_json())
     except GenException as e:
