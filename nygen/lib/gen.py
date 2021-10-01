@@ -6,7 +6,7 @@ import nygen.data
 from nygen.conf import load_conf
 from nygen.lib.formatter import Formatter
 from nygen.lib.conda import create_conda, conda_exists
-from nygen.lib.exceptions import DestinationExistsException, CondaEnvironmentExistsException
+from nygen.lib.exceptions import BadProjectNameException, DestinationExistsException, CondaEnvironmentExistsException
 
 
 def is_dir_empty(p: Path) -> bool:
@@ -18,6 +18,12 @@ def is_dir_empty(p: Path) -> bool:
     return is_empty
 
 
+def precheck_name(path_maps) -> None:
+    # Duplicate path_map destinations means bad project name, such as "docs" or "tests"
+    if len(set(dst for src, dst in path_maps)) != len(path_maps):
+        raise BadProjectNameException("Project name is invalid: {name}")
+
+
 def precheck_dst(dstpath: Path) -> None:
     if dstpath.exists() and not is_dir_empty(dstpath):
         raise DestinationExistsException(f"Destination path not empty: {dstpath.absolute()}")
@@ -26,6 +32,13 @@ def precheck_dst(dstpath: Path) -> None:
 def precheck_conda(name):
     if conda_exists(name):
         raise CondaEnvironmentExistsException(f"Conda environment already exists: {name}")
+
+
+def get_path_maps(dst_root: Path, formatter: Formatter) -> list[tuple[Path, Path]]:
+    src_root: Path = importlib.resources.files(nygen.data) / "template"
+    srcs = [p for p in src_root.rglob("*") if not (p.name == "__pycache__" or p.suffix == ".pyc") and p.is_file()]
+    path_maps = [(src, map_path(src, src_root, dst_root, formatter)) for src in srcs]
+    return path_maps
 
 
 def gen_project(name, cmd_vars: dict[str, str]):
@@ -40,6 +53,9 @@ def gen_project(name, cmd_vars: dict[str, str]):
     formatter.fill_defaults()
 
     formatter.precheck()
+    path_maps = get_path_maps()
+
+    precheck_name(path_maps)
     precheck_dst(dst_root)
     precheck_conda(name)
 
@@ -48,17 +64,10 @@ def gen_project(name, cmd_vars: dict[str, str]):
     formatter["python_path"] = json.dumps(python_path)
 
     print("Generating file structure")
-    for src, dst in map_paths(dst_root, formatter):
+    for src, dst in path_maps:
         gen_file(src, dst, formatter)
 
     print(f"Successfully created project at {dst_root.absolute()}")
-
-
-def map_paths(dst_root: Path, formatter: Formatter) -> list[tuple[Path, Path]]:
-    src_root: Path = importlib.resources.files(nygen.data) / "template"
-    srcs = [p for p in src_root.rglob("*") if not (p.name == "__pycache__" or p.suffix == ".pyc") and p.is_file()]
-    path_maps = [(src, map_path(src, src_root, dst_root, formatter)) for src in srcs]
-    return path_maps
 
 
 def map_path(src: Path, src_root: Path, dst_root: Path, formatter: Formatter):

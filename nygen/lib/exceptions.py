@@ -2,6 +2,10 @@ class GenException(Exception):
     pass
 
 
+class BadProjName(GenException):
+    pass
+
+
 class DestinationExistsException(GenException):
     pass
 
