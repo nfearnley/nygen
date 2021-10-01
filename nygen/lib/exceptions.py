@@ -12,3 +12,7 @@ class CondaEnvironmentExistsException(GenException):
 
 class MissingArgumentException(GenException):
     pass
+
+
+class CondaException(GenException):
+    pass
