@@ -25,8 +25,8 @@ def load_conf() -> tuple[NygenConf, dict[str, any]]:
     except FileNotFoundError:
         data = {}
     conf = NygenConf.load(data)
-
-    return conf, data
+    conf_vars = {k: v for k, v in data.items() if k in Formatter.conf_vars}
+    return conf, conf_vars
 
 
 def init_conf(conf_vars: dict[str, str]):

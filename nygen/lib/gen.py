@@ -53,7 +53,7 @@ def gen_project(name, cmd_vars: dict[str, str]):
     formatter.fill_defaults()
 
     formatter.precheck()
-    path_maps = get_path_maps()
+    path_maps = get_path_maps(dst_root, formatter)
 
     precheck_name(path_maps)
     precheck_dst(dst_root)
