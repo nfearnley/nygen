@@ -20,3 +20,7 @@ class MissingArgumentException(GenException):
 
 class CondaException(GenException):
     pass
+
+
+class TemplateException(GenException):
+    pass

@@ -1,13 +1,22 @@
 from pathlib import Path
 import importlib.resources
+from importlib.metadata import entry_points
 import json
 import os
 
-import nygen.data
 from nygen.conf import load_conf
 from nygen.lib.formatter import Formatter
 from nygen.lib.conda import create_conda, conda_exists
-from nygen.lib.exceptions import BadProjectNameException, DestinationExistsException, CondaEnvironmentExistsException
+from nygen.lib.exceptions import BadProjectNameException, DestinationExistsException, CondaEnvironmentExistsException, TemplateException
+
+
+def get_src_files(p: Path):
+    if p.is_file():
+        if not (p.name == "__pycache__" or p.name.endswith(".pyc")):
+            yield p
+    else:
+        for c in p.iterdir():
+            yield from get_src_files(c)
 
 
 def is_dir_empty(p: Path) -> bool:
@@ -19,7 +28,7 @@ def is_dir_empty(p: Path) -> bool:
     return is_empty
 
 
-def precheck_name(path_maps) -> None:
+def precheck_name(path_maps, name) -> None:
     # Duplicate path_map destinations means bad project name, such as "docs" or "tests"
     if len(set(dst for src, dst in path_maps)) != len(path_maps):
         raise BadProjectNameException(f"Project name is invalid: {name}")
@@ -35,9 +44,14 @@ def precheck_conda(name):
         raise CondaEnvironmentExistsException(f"Conda environment already exists: {name}")
 
 
-def get_path_maps(dst_root: Path, formatter: Formatter) -> list[tuple[Path, Path]]:
-    src_root: Path = importlib.resources.files(nygen.data) / "template"
-    srcs = [p for p in src_root.rglob("*") if not (p.name == "__pycache__" or p.suffix == ".pyc") and p.is_file()]
+def get_path_maps(dst_root: Path, formatter: Formatter, template: str) -> list[tuple[Path, Path]]:
+    try:
+        template_entrypoint = next(iter(entry_points(group="nygen.templates", name=template)))
+    except StopIteration:
+        raise TemplateException(f"Invalid template: {template!r}")
+    template_module = template_entrypoint.load()
+    src_root: Path = importlib.resources.path(template_module, '.')
+    srcs = get_src_files(src_root)
     path_maps = [(src, map_path(src, src_root, dst_root, formatter)) for src in srcs]
     return path_maps
 
@@ -49,7 +63,7 @@ def map_path(src: Path, src_root: Path, dst_root: Path, formatter: Formatter):
     return dst
 
 
-def gen_project(name, cmd_vars: dict[str, str], open_proj: bool, open_dir: bool):
+def gen_project(name, cmd_vars: dict[str, str], open_proj: bool, open_dir: bool, template: str):
     print(f"Generating project {name}")
     conf, conf_vars = load_conf()
     formatter = Formatter(cmd_vars=cmd_vars, conf_vars=conf_vars)
@@ -60,9 +74,9 @@ def gen_project(name, cmd_vars: dict[str, str], open_proj: bool, open_dir: bool)
     formatter.fill_defaults()
 
     formatter.precheck()
-    path_maps = get_path_maps(dst_root, formatter)
+    path_maps = get_path_maps(dst_root, formatter, template)
 
-    precheck_name(path_maps)
+    precheck_name(path_maps, name)
     precheck_dst(dst_root)
     precheck_conda(name)
 

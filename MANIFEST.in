@@ -1,3 +1,2 @@
-graft nygen/data
 graft docs
 recursive-include tests *.py
