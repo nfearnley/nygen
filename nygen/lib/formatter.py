@@ -30,7 +30,7 @@ class Formatter(collections.abc.Mapping):
             VarDef("author",            "Author full name",     True,   True,   True,       None),                                          # noqa: E241
             VarDef("email",             "Author email",         True,   True,   True,       None),                                          # noqa: E241
             VarDef("github",            "Github username",      True,   True,   True,       None),                                          # noqa: E241
-            VarDef("python",            "Python version",       True,   True,   True,       "3.9"),                                         # noqa: E241
+            VarDef("python",            "Python version",       True,   True,   True,       "3.10"),                                        # noqa: E241
             VarDef("_",                 "Empty string",         False,  False,  False,      ""),                                            # noqa: E241
             VarDef("year",              "Year",                 False,  False,  True,       lambda: str(date.today().year)),                # noqa: E241, E272
             VarDef("pytest_version",    "pytest version",       True,   True,   True,       lambda: nypi.get_pkg("pytest").version),        # noqa: E241, E272
