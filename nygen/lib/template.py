@@ -20,7 +20,6 @@ def get_template_files(name: str) -> Iterator[tuple[Traversable, Path]]:
         raise TemplateException(f"Invalid template: {name!r}")
 
     module = ep.load()
-    print(module)
     root = importlib.resources.files(module)
     files = iterfiles(root)
     return files
